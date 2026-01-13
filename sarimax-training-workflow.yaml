@@ -1,0 +1,40 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: sarimax-training
+  annotations:
+    scenarios.ai.sap.com/description: "Train SARIMAX forecasting models"
+    scenarios.ai.sap.com/name: "SARIMAX Training"
+    executables.ai.sap.com/description: "Training workflow for SARIMAX"
+    executables.ai.sap.com/name: "sarimax-train"
+  labels:
+    scenarios.ai.sap.com/id: "sarimax-scenario"
+    executables.ai.sap.com/id: "sarimax-train"
+    ai.sap.com/version: "1.0"
+spec:
+  imagePullSecrets:
+    - name: default-gcr-secret
+  entrypoint: train
+  arguments:
+    parameters:
+      - name: imageName
+        value: "docker.io/priyaannamalai/sarimax-forecasting:v1"
+  templates:
+    - name: train
+      inputs:
+        parameters:
+          - name: imageName
+      container:
+        image: "{{inputs.parameters.imageName}}"
+        command: ["/bin/sh", "-c"]
+        args:
+          - |
+            echo "Training workflow placeholder"
+            sleep 30
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
