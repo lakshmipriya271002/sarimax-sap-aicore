@@ -1,0 +1,17 @@
+# Core dependencies for SARIMAX inference server
+flask==3.0.0
+pandas==2.1.4
+numpy==1.26.2
+statsmodels==0.14.1
+scipy==1.11.4
+scikit-learn==1.3.2
+
+# Additional utilities
+python-dateutil==2.8.2
+pytz==2023.3
+
+# Production server
+gunicorn==21.2.0
+
+# Logging and monitoring
+werkzeug==3.0.1

@@ -1,0 +1,70 @@
+apiVersion: ai.sap.com/v1alpha1
+kind: ServingTemplate
+metadata:
+  name: sarimax-forecasting-server
+  annotations:
+    scenarios.ai.sap.com/description: "SARIMAX Time Series Forecasting for City Gas-CNG Demand"
+    scenarios.ai.sap.com/name: "sarimax-timeseries"
+    executables.ai.sap.com/description: "Expanding Window SARIMAX Model with Exogenous Variables"
+    executables.ai.sap.com/name: "sarimax-server"
+  labels:
+    scenarios.ai.sap.com/id: "sarimax-timeseries"
+    ai.sap.com/version: "1.0.0"
+spec:
+  inputs:
+    parameters:
+      - name: modelName
+        description: "Name of the SARIMAX model to use for predictions"
+        type: string
+        default: "sarimax_initial_18months"
+      - name: imageName
+        description: "Docker image name"
+        type: string
+        default: "docker.io/priyaannamalai/sarimax-forecasting:v1"
+  template:
+    apiVersion: serving.kserve.io/v1beta1
+    kind: InferenceService
+    metadata:
+      name: sarimax-forecasting
+      labels:
+        ai.sap.com/resourcePlan: starter
+    spec:
+      predictor:
+        imagePullSecrets:
+          - name: docker-secret
+        minReplicas: 1
+        maxReplicas: 3
+        containers:
+          - name: kserve-container
+            image: "{{inputs.parameters.imageName}}"
+            ports:
+              - containerPort: 9001
+                protocol: TCP
+            env:
+              - name: MODEL_PATH
+                value: "/app/models"
+              - name: PORT
+                value: "9001"
+              - name: MODEL_NAME
+                value: "{{inputs.parameters.modelName}}"
+            resources:
+              requests:
+                memory: "2Gi"
+                cpu: "1000m"
+              limits:
+                memory: "4Gi"
+                cpu: "2000m"
+            livenessProbe:
+              httpGet:
+                path: /health
+                port: 9001
+              initialDelaySeconds: 30
+              periodSeconds: 30
+              timeoutSeconds: 10
+            readinessProbe:
+              httpGet:
+                path: /health
+                port: 9001
+              initialDelaySeconds: 20
+              periodSeconds: 10
+              timeoutSeconds: 5
