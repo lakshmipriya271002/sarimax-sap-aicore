@@ -1,0 +1,60 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: sarimax-forecasting-serving
+  annotations:
+    scenarios.ai.sap.com/description: "SARIMAX Time Series Forecasting for City Gas-CNG Demand"
+    scenarios.ai.sap.com/name: "SARIMAX Forecasting"
+    executables.ai.sap.com/description: "Expanding Window SARIMAX Model Server"
+    executables.ai.sap.com/name: "sarimax-server"
+  labels:
+    scenarios.ai.sap.com/id: "sarimax-timeseries"
+    executables.ai.sap.com/id: "sarimax-server"
+    ai.sap.com/version: "1.0.0"
+spec:
+  imagePullSecrets:
+    - name: default-gcr-secret
+  entrypoint: sarimax-serve
+  arguments:
+    parameters:
+      - name: imageName
+        value: "docker.io/priyaannamalai/sarimax-forecasting:v1"
+      - name: modelName
+        value: "sarimax_initial_18months"
+  templates:
+    - name: sarimax-serve
+      inputs:
+        parameters:
+          - name: imageName
+          - name: modelName
+      container:
+        image: "{{inputs.parameters.imageName}}"
+        ports:
+          - containerPort: 9001
+            name: http
+        env:
+          - name: MODEL_PATH
+            value: "/app/models"
+          - name: PORT
+            value: "9001"
+          - name: MODEL_NAME
+            value: "{{inputs.parameters.modelName}}"
+        resources:
+          requests:
+            memory: "2Gi"
+            cpu: "1000m"
+          limits:
+            memory: "4Gi"
+            cpu: "2000m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 9001
+          initialDelaySeconds: 30
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 9001
+          initialDelaySeconds: 20
+          periodSeconds: 10
