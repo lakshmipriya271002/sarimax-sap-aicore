@@ -22,6 +22,7 @@ spec:
         default: "sarimax_initial_18months"
   template:
     apiVersion: "serving.kserve.io/v1beta1"
+    kind: "InferenceService"
     metadata:
       annotations: |
         autoscaling.knative.dev/metric: concurrency
@@ -29,7 +30,7 @@ spec:
         autoscaling.knative.dev/targetBurstCapacity: "0"
       labels: |
         ai.sap.com/resourcePlan: infer.s
-    spec:
+    spec: |
       predictor:
         imagePullSecrets:
           - name: default-docker-registry-secret
