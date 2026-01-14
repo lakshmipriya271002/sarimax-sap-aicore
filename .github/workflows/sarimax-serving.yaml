@@ -1,5 +1,5 @@
-apiVersion: ai.sap.com/v1alpha1
-kind: ServingTemplate
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
 metadata:
   name: sarimax-forecasting-server
   annotations:
@@ -12,35 +12,37 @@ metadata:
     executables.ai.sap.com/id: "sarimax-server"
     ai.sap.com/version: "1.0.0"
 spec:
-  inputs:
+  imagePullSecrets:
+    - name: default-gcr-secret
+  entrypoint: sarimax-serve
+  arguments:
     parameters:
-      - name: modelName
-        type: string
-        default: "sarimax_initial_18months"
       - name: imageName
-        type: string
-        default: "docker.io/priyaannamalai/sarimax-forecasting:v1"
-  template:
-    apiVersion: "serving.kserve.io/v1beta1"
-    kind: "InferenceService"
-    metadata:
-      name: "{{workflow.name}}"
-      labels:
-        ai.sap.com/resourcePlan: "starter"
-    spec:
-      predictor:
-        minReplicas: 1
-        maxReplicas: 3
-        containers:
-          - name: "kserve-container"
-            image: "{{inputs.parameters.imageName}}"
-            ports:
-              - containerPort: 9001
-                protocol: "TCP"
-            env:
-              - name: "MODEL_PATH"
-                value: "/app/models"
-              - name: "PORT"
-                value: "9001"
-              - name: "MODEL_NAME"
-                value: "{{inputs.parameters.modelName}}"
+        value: "docker.io/priyaannamalai/sarimax-forecasting:v1"
+      - name: modelName
+        value: "sarimax_initial_18months"
+  templates:
+    - name: sarimax-serve
+      inputs:
+        parameters:
+          - name: imageName
+          - name: modelName
+      container:
+        image: "{{inputs.parameters.imageName}}"
+        ports:
+          - containerPort: 9001
+            name: http
+        env:
+          - name: MODEL_PATH
+            value: "/app/models"
+          - name: PORT
+            value: "9001"
+          - name: MODEL_NAME
+            value: "{{inputs.parameters.modelName}}"
+        resources:
+          requests:
+            memory: "2Gi"
+            cpu: "1000m"
+          limits:
+            memory: "4Gi"
+            cpu: "2000m"
