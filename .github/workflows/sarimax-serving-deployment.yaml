@@ -32,8 +32,6 @@ spec:
         ai.sap.com/resourcePlan: infer.s
     spec: |
       predictor:
-        imagePullSecrets:
-          - name: default-docker-registry-secret
         minReplicas: 1
         maxReplicas: 3
         containers:
