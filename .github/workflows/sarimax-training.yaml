@@ -1,0 +1,63 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: sarimax-training-workflow
+  annotations:
+    scenarios.ai.sap.com/description: "Train SARIMAX forecasting models with expanding window"
+    scenarios.ai.sap.com/name: "SARIMAX Training"
+    executables.ai.sap.com/description: "Training workflow for SARIMAX time series models"
+    executables.ai.sap.com/name: "sarimax-train"
+  labels:
+    scenarios.ai.sap.com/id: "sarimax-timeseries"
+    executables.ai.sap.com/id: "sarimax-train"
+    ai.sap.com/version: "1.0.0"
+spec:
+  imagePullSecrets:
+    - name: default-gcr-secret
+  entrypoint: sarimax-train
+  arguments:
+    parameters:
+      - name: imageName
+        value: "docker.io/priyaannamalai/sarimax-forecasting:v1"
+      - name: trainingMonths
+        value: "18"
+      - name: dataPath
+        value: "/app/data"
+  templates:
+    - name: sarimax-train
+      inputs:
+        parameters:
+          - name: imageName
+          - name: trainingMonths
+          - name: dataPath
+      container:
+        image: "{{inputs.parameters.imageName}}"
+        command: ["/bin/sh", "-c"]
+        args:
+          - |
+            echo "Starting SARIMAX model training..."
+            echo "Training months: {{inputs.parameters.trainingMonths}}"
+            echo "Data path: {{inputs.parameters.dataPath}}"
+            echo "Image: {{inputs.parameters.imageName}}"
+            
+            # Placeholder for actual training logic
+            # In production, this would:
+            # 1. Load training data from specified path
+            # 2. Train SARIMAX models for different forecast types
+            # 3. Save models to persistent storage
+            # 4. Log training metrics
+            
+            echo "Training completed successfully"
+            sleep 10
+        env:
+          - name: TRAINING_MONTHS
+            value: "{{inputs.parameters.trainingMonths}}"
+          - name: DATA_PATH
+            value: "{{inputs.parameters.dataPath}}"
+        resources:
+          requests:
+            memory: "2Gi"
+            cpu: "1000m"
+          limits:
+            memory: "4Gi"
+            cpu: "2000m"
