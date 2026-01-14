@@ -1,20 +1,20 @@
 apiVersion: argoproj.io/v1alpha1
 kind: WorkflowTemplate
 metadata:
-  name: sarimax-forecasting-server
+  name: sarimax-serve
   annotations:
     scenarios.ai.sap.com/description: "SARIMAX Time Series Forecasting for City Gas-CNG Demand"
     scenarios.ai.sap.com/name: "SARIMAX Forecasting"
-    executables.ai.sap.com/description: "Expanding Window SARIMAX Model Server"
-    executables.ai.sap.com/name: "sarimax-server"
+    executables.ai.sap.com/description: "Deploy SARIMAX model for inference"
+    executables.ai.sap.com/name: "serve"
   labels:
     scenarios.ai.sap.com/id: "sarimax-timeseries"
-    executables.ai.sap.com/id: "sarimax-server"
+    executables.ai.sap.com/id: "serve"
     ai.sap.com/version: "1.0.0"
 spec:
   imagePullSecrets:
     - name: default-gcr-secret
-  entrypoint: sarimax-serve
+  entrypoint: serve
   arguments:
     parameters:
       - name: imageName
@@ -22,7 +22,7 @@ spec:
       - name: modelName
         value: "sarimax_initial_18months"
   templates:
-    - name: sarimax-serve
+    - name: serve
       inputs:
         parameters:
           - name: imageName

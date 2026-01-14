@@ -1,20 +1,20 @@
 apiVersion: argoproj.io/v1alpha1
 kind: WorkflowTemplate
 metadata:
-  name: sarimax-training-workflow
+  name: sarimax-train
   annotations:
-    scenarios.ai.sap.com/description: "Train SARIMAX forecasting models with expanding window"
-    scenarios.ai.sap.com/name: "SARIMAX Training"
-    executables.ai.sap.com/description: "Training workflow for SARIMAX time series models"
-    executables.ai.sap.com/name: "sarimax-train"
+    scenarios.ai.sap.com/description: "SARIMAX Time Series Forecasting for City Gas-CNG Demand"
+    scenarios.ai.sap.com/name: "SARIMAX Forecasting"
+    executables.ai.sap.com/description: "Train SARIMAX models with expanding window"
+    executables.ai.sap.com/name: "train"
   labels:
     scenarios.ai.sap.com/id: "sarimax-timeseries"
-    executables.ai.sap.com/id: "sarimax-train"
+    executables.ai.sap.com/id: "train"
     ai.sap.com/version: "1.0.0"
 spec:
   imagePullSecrets:
     - name: default-gcr-secret
-  entrypoint: sarimax-train
+  entrypoint: train
   arguments:
     parameters:
       - name: imageName
@@ -24,7 +24,7 @@ spec:
       - name: dataPath
         value: "/app/data"
   templates:
-    - name: sarimax-train
+    - name: train
       inputs:
         parameters:
           - name: imageName
